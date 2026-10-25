@@ -1,0 +1,25 @@
+name: Build SAM
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (Release x86)
+        run: dotnet build SAM.sln -c Release -p:Platform=x86
+
+      - name: List output
+        run: dir upload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SAM-custom
+          path: |
+            upload/*.exe
+            upload/*.dll
+            upload/*.config
