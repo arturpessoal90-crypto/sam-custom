@@ -1,0 +1,29 @@
+name: Build SAM
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip source
+        shell: pwsh
+        run: Expand-Archive -Path SAM-custom-source.zip -DestinationPath src -Force
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $sln = Get-ChildItem -Path src -Recurse -Filter SAM.sln | Select-Object -First 1
+          Set-Location $sln.DirectoryName
+          dotnet build SAM.sln -c Release -p:Platform=x86
+          Get-ChildItem upload
+          "OUT=$($sln.DirectoryName)\upload" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SAM-custom
+          path: ${{ env.OUT }}
